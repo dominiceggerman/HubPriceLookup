@@ -37,3 +37,6 @@ if __name__ == "__main__":
     # Get data
     prices = accessDB(user, password)
     
+    # Get average price over period
+    hub_prices = prices.fillna(0).pivot_table(values="Average Price", index=["Issue Date"], columns=["Price Point Name"])
+    print(hub_prices.head())

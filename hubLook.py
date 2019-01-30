@@ -42,11 +42,27 @@ if __name__ == "__main__":
     
     # Statistics
     hub_prices = prices.pivot_table(values="Average Price", index=["Issue Date"], columns=["Price Point Name"])
+
+    hub_stats = {}
     for hub in hub_prices.columns:
-        data = hub_prices[hub].remove(0.0)
-        avg = sum(data) / len(data)
+        data = hub_prices[hub][hub_prices[hub] != 0]
+        if len(data) == 0:
+            continue
+        
+        # Calc day 120 avg and 7 day average
+        avg = round(sum(data) / len(data), 2)
         if 0 not in hub_prices[hub][-10:]:
-            wk_avg = sum(data[-7:]) / 7
+            wk_avg = round(sum(data[-7:]) / 7, 2)
         else:
             wk_avg = None
         
+        # Calc DoD difference
+        today = round(hub_prices[hub].iloc[-1], 2)
+        dod = round(today - hub_prices[hub].iloc[-2], 2)
+
+        # Add to stats dict
+        hub_stats[hub] = {"Avg":avg, "Week Avg":wk_avg, "DoD":dod, "Today":today}
+
+    # Create df
+    hub_stats = pd.DataFrame.from_dict(hub_stats, orient="index")
+    print(hub_stats.head())

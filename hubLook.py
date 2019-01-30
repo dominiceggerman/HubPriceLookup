@@ -36,7 +36,17 @@ if __name__ == "__main__":
     user, password = readfile.readFile("creds.txt")
     # Get data
     prices = accessDB(user, password)
+    # Fill NaN and alter dtype
+    prices.fillna(0, inplace=True)
+    prices["Average Price"] = prices["Average Price"].astype(float)
     
-    # Get average price over period
-    hub_prices = prices.fillna(0).pivot_table(values="Average Price", index=["Issue Date"], columns=["Price Point Name"])
-    print(hub_prices.head())
+    # Statistics
+    hub_prices = prices.pivot_table(values="Average Price", index=["Issue Date"], columns=["Price Point Name"])
+    for hub in hub_prices.columns:
+        data = hub_prices[hub].remove(0.0)
+        avg = sum(data) / len(data)
+        if 0 not in hub_prices[hub][-10:]:
+            wk_avg = sum(data[-7:]) / 7
+        else:
+            wk_avg = None
+        

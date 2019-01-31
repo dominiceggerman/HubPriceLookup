@@ -1,5 +1,6 @@
 # Imports
 import pandas as pd
+import numpy as np
 import psycopg2
 import readfile
 
@@ -61,8 +62,27 @@ if __name__ == "__main__":
         dod = round(today - hub_prices[hub].iloc[-2], 2)
 
         # Add to stats dict
-        hub_stats[hub] = {"Avg":avg, "Week Avg":wk_avg, "DoD":dod, "Today":today}
+        hub_stats[hub] = {"Avg":avg, "Week Avg":wk_avg, "Today":today, "DoD":dod}
 
     # Create df
     hub_stats = pd.DataFrame.from_dict(hub_stats, orient="index")
-    print(hub_stats.head())
+
+    # Create additional indicators
+    hub_stats["Change DoD"] = hub_stats["DoD"] / (hub_stats["Today"] - hub_stats["DoD"])
+    hub_stats["Change DoW"] = (hub_stats["Today"] - hub_stats["Week Avg"]) / hub_stats["Week Avg"]
+    hub_stats["Change WoY"] = (hub_stats["Week Avg"] - hub_stats["Avg"]) / hub_stats["Avg"]
+
+    # Filter bad values
+    hub_stats = hub_stats[hub_stats["Today"] != 0.0]
+    hub_stats = hub_stats[hub_stats["Change DoD"] != np.inf]
+    
+    # Sort and print
+    print("Largest positive DoD percentage change:")
+    print(hub_stats.sort_values(by=["Change DoD"], ascending=False).head())
+    print("Largest positive DoW percentage change:")
+    print(hub_stats.sort_values(by=["Change DoW"], ascending=False).head())
+
+    print("Largest negative DoD percentage change:")
+    print(hub_stats.sort_values(by=["Change DoD"]).head())
+    print("Largest negative DoW percentage change:")
+    print(hub_stats.sort_values(by=["Change DoW"]).head())

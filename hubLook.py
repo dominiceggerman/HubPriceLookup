@@ -62,7 +62,7 @@ if __name__ == "__main__":
         dod = round(today - hub_prices[hub].iloc[-2], 2)
 
         # Add to stats dict
-        hub_stats[hub] = {"Avg":avg, "Week Avg":wk_avg, "Today":today, "DoD":dod}
+        hub_stats[hub] = {"Today":today, "DoD":dod, "Week Avg":wk_avg, "120 Avg":avg}
 
     # Create df
     hub_stats = pd.DataFrame.from_dict(hub_stats, orient="index")
@@ -70,7 +70,6 @@ if __name__ == "__main__":
     # Create additional indicators
     hub_stats["Change DoD"] = hub_stats["DoD"] / (hub_stats["Today"] - hub_stats["DoD"])
     hub_stats["Change DoW"] = (hub_stats["Today"] - hub_stats["Week Avg"]) / hub_stats["Week Avg"]
-    hub_stats["Change WoY"] = (hub_stats["Week Avg"] - hub_stats["Avg"]) / hub_stats["Avg"]
 
     # Filter bad values
     hub_stats = hub_stats[hub_stats["Today"] != 0.0]

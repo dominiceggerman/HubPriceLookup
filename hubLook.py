@@ -47,8 +47,6 @@ if __name__ == "__main__":
     hub_stats = {}
     for hub in hub_prices.columns:
         data = hub_prices[hub][hub_prices[hub] != 0]
-        if len(data) == 0:
-            continue
         
         # Calc day 120 avg and 7 day average
         avg = round(sum(data) / len(data), 2)

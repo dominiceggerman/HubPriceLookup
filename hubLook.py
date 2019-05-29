@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import psycopg2
 import readfile
+from datetime import datetime as dt
 
 
 # Access DB
@@ -35,14 +36,30 @@ def accessDB(user, password):
 if __name__ == "__main__":
     # Get creds
     user, password = readfile.readFile("creds.txt")
-    # Get data
+    # Get price data
     prices = accessDB(user, password)
     # Fill NaN and alter dtype
     prices.fillna(0, inplace=True)
     prices["Average Price"] = prices["Average Price"].astype(float)
     
-    # Statistics
+    # Pivot hub
     hub_prices = prices.pivot_table(values="Average Price", index=["Issue Date"], columns=["Price Point Name"])
-    print(hub_prices.head())
+    # Get day-to-day difference
+    hub_prices_diff = hub_prices.diff()
+    # Get percentage change day-to-day
+    price_percentage = hub_prices_diff / hub_prices
 
-    print(hub_prices["NGPL Midcontinent"].head())
+    # Get junk columns to drop
+    to_drop = price_percentage.columns[(price_percentage.abs() <= 0.05).iloc[-1]]
+    # Drop junk columns
+    hub_prices.drop(to_drop, axis=1, inplace=True)
+    price_percentage.drop(to_drop, axis=1, inplace=True)
+
+    # Same but with percentages = 1
+    to_drop = price_percentage.columns[(price_percentage.abs() == 1.0).iloc[-1]]
+    hub_prices.drop(to_drop, axis=1, inplace=True)
+    price_percentage.drop(to_drop, axis=1, inplace=True)
+
+
+    print(hub_prices.tail())
+    print(price_percentage.tail())

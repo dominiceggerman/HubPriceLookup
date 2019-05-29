@@ -45,4 +45,4 @@ if __name__ == "__main__":
     hub_prices = prices.pivot_table(values="Average Price", index=["Issue Date"], columns=["Price Point Name"])
     print(hub_prices.head())
 
-    
+    print(hub_prices["NGPL Midcontinent"].head())
